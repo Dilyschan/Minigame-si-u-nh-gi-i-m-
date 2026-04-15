@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIÊU NHÍ GIẢI MÃ - QUANG MINH</title>
+    <style>
+        :root { --gold: #FFD700; --orange: #FF6B6B; --blue: #4D96FF; --green: #6BCB77; }
+        body { font-family: 'Arial Rounded MT Bold', sans-serif; background: #A0D2EB; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        #game-box { background: white; width: 95%; max-width: 450px; border-radius: 30px; padding: 25px; box-shadow: 0 10px 0px #7abfd6; text-align: center; border: 5px solid white; position: relative; }
+        .hidden { display: none !important; }
+        input { width: 85%; padding: 15px; margin: 10px 0; border: 3px solid #eee; border-radius: 15px; font-size: 18px; text-align: center; }
+        .btn-main { background: #FF6B6B; color: white; border: none; padding: 15px 30px; border-radius: 50px; font-size: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 6px 0 #cc5555; width: 100%; }
+        
+        /* Game Play */
+        #word-display { font-size: 35px; color: var(--blue); margin: 15px 0; min-height: 45px; letter-spacing: 3px; border-bottom: 2px dashed #ccc; }
+        .letter-btn { background: var(--gold); border: none; font-size: 22px; font-weight: bold; width: 55px; height: 55px; margin: 5px; border-radius: 12px; box-shadow: 0 4px 0 #ccac00; cursor: pointer; }
+
+        /* Vòng quay nâng cấp có chữ */
+        .wheel-wrap { position: relative; width: 280px; height: 280px; margin: 20px auto; }
+        #wheel { width: 100%; height: 100%; border-radius: 50%; border: 10px solid #333; position: relative; overflow: hidden; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); background: #eee; }
+        .segment { position: absolute; width: 50%; height: 50%; left: 50%; top: 50%; transform-origin: 0% 0%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold; text-align: center; padding-left: 40px; box-sizing: border-box; }
+        /* Chia 4 phần quà */
+        .s1 { transform: rotate(0deg) skewY(0deg); background: var(--orange); }
+        .s2 { transform: rotate(90deg) skewY(0deg); background: var(--blue); }
+        .s3 { transform: rotate(180deg) skewY(0deg); background: var(--green); }
+        .s4 { transform: rotate(270deg) skewY(0deg); background: var(--gold); color: #333; }
+        .text-label { transform: rotate(45deg); position: absolute; width: 100px; left: 20px; }
+
+        .pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #333; z-index: 100; }
+    </style>
+</head>
+<body>
+
+<div id="game-box">
+    <div id="scr-form">
+        <h1 style="color: var(--orange);">🎒 SIÊU NHÍ GIẢI MÃ</h1>
+        <p>Nhập thông tin để nhận quà bé nhé!</p>
+        <input type="text" id="name" placeholder="Tên của bé...">
+        <input type="tel" id="phone" placeholder="Số điện thoại Ba/Mẹ...">
+        <button class="btn-main" onclick="startSetup()">VÀO CHƠI NGAY</button>
+    </div>
+
+    <div id="scr-game" class="hidden">
+        <div id="timer" style="font-size: 22px; color: red; font-weight: bold;">15s</div>
+        <p>Chủ đề: <b id="topic-text" style="color: var(--orange);">...</b></p>
+        <div id="word-display"></div>
+        <div id="letters-area"></div>
+    </div>
+
+    <div id="scr-wheel" class="hidden">
+        <h2 style="margin:0;">XUẤT SẮC! 🎉</h2>
+        <p>Quay để chọn quà bí mật:</p>
+        <div class="wheel-wrap">
+            <div class="pointer"></div>
+            <div id="wheel">
+                <div class="segment s1"><div class="text-label">KẸO MÚT</div></div>
+                <div class="segment s2"><div class="text-label">BÚT CHÌ</div></div>
+                <div class="segment s3"><div class="text-label">GẤU BÔNG</div></div>
+                <div class="segment s4"><div class="text-label">NHÃN VỞ</div></div>
+            </div>
+        </div>
+        <button id="btn-spin" class="btn-main" onclick="spinWheel()">QUAY NGAY</button>
+    </div>
+
+    <div id="scr-win" class="hidden">
+        <h1 style="color: var(--green);">CHÚC MỪNG!</h1>
+        <div style="background: #fffbe6; padding: 20px; border: 3px dashed var(--gold); border-radius: 20px;">
+            <p>Món quà của <b><span id="final-name"></span></b> là:</p>
+            <h2 id="final-gift" style="color: red; font-size: 30px; margin: 10px 0;">...</h2>
+            <p style="font-weight: bold;">+ VOUCHER TEST FREE</p>
+        </div>
+        <p style="font-size: 13px; color: #666; margin-top: 15px;">Ba mẹ hãy chụp ảnh màn hình <br>để nhận quà tại Trung tâm nhé!</p>
+        <button class="btn-main" style="background: #333;" onclick="location.reload()">CHƠI LẠI</button>
+    </div>
+</div>
+
+<script>
+    // 1. DÁN LINK GOOGLE SCRIPT CỦA BẠN VÀO ĐÂY
+    const SCRIPT_URL = "DÁN_URL_GOOGLE_APPS_SCRIPT_CỦA_BẠN_VÀO_ĐÂY";
+
+    const dataWord = [
+        {t: "Trường học", w: "SCHOOL"}, {t: "Mùa hè", w: "SUMMER"}, 
+        {t: "Gia đình", w: "FAMILY"}, {t: "Trái cây", w: "BANANA"},
+        {t: "Động vật", w: "TIGER"}, {t: "Màu sắc", w: "YELLOW"}
+    ];
+    
+    let targetWord = "";
+    let currentInput = "";
+    let timeLeft = 15;
+    let gameInterval;
+
+    function startSetup() {
+        const n = document.getElementById('name').value;
+        const p = document.getElementById('phone').value;
+        if(!n || !p) return alert("Ba mẹ nhập đủ tên và số điện thoại nhé!");
+
+        // Gửi data đi
+        fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({name:n, phone:p}) });
+
+        document.getElementById('scr-form').classList.add('hidden');
+        document.getElementById('scr-game').classList.remove('hidden');
+        
+        const item = dataWord[Math.floor(Math.random()*dataWord.length)];
+        targetWord = item.w;
+        document.getElementById('topic-text').innerText = item.t;
+        initGame();
+    }
+
+    function initGame() {
+        const shuffle = targetWord.split('').sort(()=>Math.random()-0.5);
+        const area = document.getElementById('letters-area');
+        area.innerHTML = '';
+        shuffle.forEach(c => {
+            const btn = document.createElement('button');
+            btn.className = 'letter-btn';
+            btn.innerText = c;
+            btn.onclick = () => {
+                if(c === targetWord[currentInput.length]) {
+                    currentInput += c;
+                    document.getElementById('word-display').innerText = currentInput;
+                    btn.style.visibility = 'hidden';
+                    if(currentInput === targetWord) {
+                        clearInterval(gameInterval);
+                        setTimeout(()=> {
+                            document.getElementById('scr-game').classList.add('hidden');
+                            document.getElementById('scr-wheel').classList.remove('hidden');
+                        }, 500);
+                    }
+                } else {
+                    btn.style.background = '#ff4d4d';
+                    setTimeout(()=> btn.style.background = 'var(--gold)', 200);
+                }
+            };
+            area.appendChild(btn);
+        });
+
+        gameInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').innerText = timeLeft + "s";
+            if(timeLeft <= 0) { clearInterval(gameInterval); alert("Hết giờ mất rồi! Bé thử lại nhé."); location.reload(); }
+        }, 1000);
+    }
+
+    function spinWheel() {
+        const wheel = document.getElementById('wheel');
+        const btn = document.getElementById('btn-spin');
+        const gifts = ["KẸO MÚT", "BÚT CHÌ", "GẤU BÔNG", "NHÃN VỞ"];
+        
+        btn.disabled = true;
+        btn.innerText = "ĐANG QUAY...";
+        
+        const randomDeg = Math.floor(Math.random() * 360) + 3600; // Quay 10 vòng + ngẫu nhiên
+        wheel.style.transform = `rotate(${randomDeg}deg)`;
+
+        setTimeout(() => {
+            const actualDeg = randomDeg % 360;
+            // Xác định quà dựa trên góc dừng (Kim ở đỉnh 0 độ)
+            // Vì quay cùng chiều kim đồng hồ, ta tính ngược lại
+            let giftIndex = Math.floor(((360 - actualDeg % 360)) / 90);
+            if(giftIndex === 4) giftIndex = 0;
+
+            document.getElementById('scr-wheel').classList.add('hidden');
+            document.getElementById('scr-win').classList.remove('hidden');
+            document.getElementById('final-gift').innerText = gifts[giftIndex];
+            document.getElementById('final-name').innerText = document.getElementById('name').value;
+        }, 4500);
+    }
+</script>
+</body>
+</html>

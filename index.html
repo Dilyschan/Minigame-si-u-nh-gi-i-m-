@@ -54,10 +54,10 @@
         <div class="wheel-wrap">
             <div class="pointer"></div>
             <div id="wheel">
-                <div class="segment s1"><div class="text-label">KẸO MÚT</div></div>
-                <div class="segment s2"><div class="text-label">BÚT CHÌ</div></div>
-                <div class="segment s3"><div class="text-label">GẤU BÔNG</div></div>
-                <div class="segment s4"><div class="text-label">QUÀ BÍ MẬT</div></div>
+                <div class="segment s1"><div class="text-label">quà bí mật 4</div></div>
+                <div class="segment s2"><div class="text-label">quà bí mật 1</div></div>
+                <div class="segment s3"><div class="text-label">Quà bí mật 2</div></div>
+                <div class="segment s4"><div class="text-label">quà bí mật 3</div></div>
             </div>
         </div>
         <button id="btn-spin" class="btn-main" onclick="spinWheel()">QUAY NGAY</button>
@@ -145,7 +145,7 @@
     function spinWheel() {
         const wheel = document.getElementById('wheel');
         const btn = document.getElementById('btn-spin');
-        const gifts = ["KẸO MÚT", "BÚT CHÌ", "GẤU BÔNG", "NHÃN VỞ"];
+        const gifts = ["KẸO MÚT", "BÚT CHÌ", "GẤU BÔNG", "BÓNG BAY"];
         
         btn.disabled = true;
         btn.innerText = "ĐANG QUAY...";
